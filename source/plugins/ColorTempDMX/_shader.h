@@ -28,61 +28,31 @@
 */
 
 static const std::string fshader = R"(
-
-//Uniforms
-// float u_lumaBandPoint
-// float u_lumaBandWidth
-// float u_fade
-// vec4  u_tint
-// float u_lift
-// float u_gamma
-// float u_gain
-// float u_offset
-
+vec3 colorTemperature(vec3 color, float _colorTemp)
+{
+	mat3 m = (_colorTemp <= 6500.0) ? 
+		mat3(vec3(0.0, -2902.1955373783176, -8257.7997278925690),
+	    vec3(0.0, 1669.5803561666639, 2575.2827530017594),
+	    vec3(1.0, 1.3302673723350029, 1.8993753891711275)) : 
+	 	mat3(vec3(1745.0425298314172, 1216.6168361476490, -8257.7997278925690),
+   	    vec3(-2666.3474220535695, -2173.1012343082230, 2575.2827530017594),
+	    vec3(0.55995389139931482, 0.70381203140554553, 1.8993753891711275)); 
+	
+	return color * mix(clamp(vec3(m[0] / (vec3(_colorTemp) + m[1]) + m[2]), vec3(0.0), vec3(1.0)), vec3(1.0), smoothstep(1000.0, 0.0, _colorTemp));
+} 
 
 void main()
 {
 	vec4 color = texture( inputTexture, i_uv );
 
-	// The InputTexture contains premultiplied colors, so we need to unpremultiply first to apply our effect on straight colors.
+	//The InputTexture contains premultiplied colors, so we need to unpremultiply first to apply our effect on straight colors.
 	if( color.a > 0.0 )
 		color.rgb /= color.a;
 
-	float luma				= dot(color.rgb, vec3(0.2126, 0.7152, 0.0722));
+	color.rgb = colorTemperature(color.rgb, colorTemp);
 
-	float bandBottom		= u_lumaBandPoint - (u_lumaBandWidth * 0.5);
-	float bandTop			= u_lumaBandPoint + (u_lumaBandWidth * 0.5);
-
-	float lowEdge			= smoothstep(bandBottom - u_fade, bandBottom, luma);
-	float highEdge			= 1.0 - smoothstep(bandTop, bandTop + u_fade, luma);
-	float effectStrength	= lowEdge * highEdge * color.a;
-
-	vec3 baseColor			= color.rgb;
-	vec3 adjustedColor		= baseColor;
-
-	// Lift
-	adjustedColor			= adjustedColor * (1.0 - u_lift) + u_lift;
-
-	// Gamma
-	float gDelta            = u_gamma - 1.0;
-	float gammaCurve        = gDelta * (0.4532 - gDelta * (0.1345 - gDelta * 0.0241));
-	adjustedColor           += adjustedColor * gammaCurve;
-
-	// Gaim
-	adjustedColor			*= u_gain;
-	
-	// Offset
-	adjustedColor			+= u_offset;
-
-	// Tint
-	adjustedColor			+= u_tint.rgb;
-
-	// Clamp color delta and mix with base color.
-	adjustedColor			= clamp(adjustedColor, 0.0, 1.0);
-	color.rgb				= mix(baseColor, adjustedColor, effectStrength);
-
-	// The plugin has to output premultiplied colors, this is how we're premultiplying our straight color while also
-	// ensuring we aren't going out of the LDR the video engine is working in.
+	//The plugin has to output premultiplied colors, this is how we're premultiplying our straight color while also
+	//ensuring we aren't going out of the LDR the video engine is working in.
 	color.rgb = clamp( color.rgb * color.a, vec3( 0.0 ), vec3( color.a ) );
 	fragColor = color;
 }

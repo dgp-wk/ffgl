@@ -19,10 +19,10 @@ Effect::Effect()
 	AddParam( ffglqs::ParamRange::Create( "u_fade",				0.05f, ffglqs::ParamRange::Range( 0.01f, 0.2f ) ) );
 	AddElementSeparator( 0, 2 );
 	
-	AddParam( ffglqs::Param::Create( "u_tint", FF_TYPE_HUE, 0. ) );
-	AddParam( ffglqs::Param::Create( "u_tint_saturation", FF_TYPE_SATURATION, 0. ) );
-	AddParam( ffglqs::Param::Create( "u_tint_brightness", FF_TYPE_BRIGHTNESS, 0.0 ) );
-	AddParam( ffglqs::Param::Create( "u_tint_alpha", FF_TYPE_ALPHA, 1.0 ) );
+	AddParam( ffglqs::Param::Create( "u_tint", FF_TYPE_HUE, 0.0f ) );
+	AddParam( ffglqs::Param::Create( "u_tint_saturation", FF_TYPE_SATURATION, 0.0f ) );
+	AddParam( ffglqs::Param::Create( "u_tint_brightness", FF_TYPE_BRIGHTNESS, 0.0f ) );
+	AddParam( ffglqs::Param::Create( "u_tint_alpha", FF_TYPE_ALPHA, 1.0f ) );
 
 
 	AddParam( ffglqs::ParamRange::Create( "u_lift",				0.0f,  ffglqs::ParamRange::Range( -1.0f, 1.0f ) ) );

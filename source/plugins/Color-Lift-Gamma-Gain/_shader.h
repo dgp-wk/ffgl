@@ -33,11 +33,11 @@ static const std::string fshader = R"(
 // float u_lumaBandPoint
 // float u_lumaBandWidth
 // float u_fade
-// vec4  u_tint
 // float u_lift
 // float u_gamma
 // float u_gain
 // float u_offset
+// vec4 u_weight
 
 
 void main()
@@ -74,12 +74,13 @@ void main()
 	// Offset
 	adjustedColor			+= u_offset;
 
-	// Tint
-	adjustedColor			+= u_tint.rgb;
+	// Weight
+	adjustedColor			*= u_weight;
 
 	// Clamp color delta and mix with base color.
+	vec3 weightedBlend		= u_weight.rgb * effectStrength;
 	adjustedColor			= clamp(adjustedColor, 0.0, 1.0);
-	color.rgb				= mix(baseColor, adjustedColor, effectStrength);
+	color.rgb				= mix(baseColor, adjustedColor, weightedBlend);
 
 	// The plugin has to output premultiplied colors, this is how we're premultiplying our straight color while also
 	// ensuring we aren't going out of the LDR the video engine is working in.
